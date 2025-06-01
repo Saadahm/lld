@@ -8,11 +8,13 @@ public class Pair {
         this.col=col;
     }
 
-    public int getCol() {
+    public int getValue() {
         return col;
     }
 
-    public int getRow() {
+    public int getKey() {
         return row;
     }
+
+
 }

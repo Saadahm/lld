@@ -1,31 +1,82 @@
 package SnakeAndFoodGameDesign;
 
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
-public class SnakeGame {
-    private GameBoard gameBoard;
-    public Deque<Pair> snake;
+class SnakeGame {
+    private GameBoard board;
+    Deque<Pair> snake;
+    private Map<Pair, Boolean> snakeMap;
+    private int[][] food;
     private int foodIndex;
     private MovementStrategy movementStrategy;
-    private int [][]foodpositions;
 
-    public SnakeGame(int width, int height, MovementStrategy movementStrategy, int [][]foodpositions) {
-        this.gameBoard = GameBoard.getInstance(width, height);
-        this.snake = new LinkedList<>();
+    // Initialize the game with specified dimensions and food positions.
+    public SnakeGame(int width, int height, int[][] food) {
+        this.board = GameBoard.getInstance(width, height);
+        this.food = food;
         this.foodIndex = 0;
-        this.movementStrategy = movementStrategy;
-        this.foodpositions = foodpositions;
-    }
-    public int move(String direction)
-    {
-        Pair old=this.snake.peekFirst();
-        //out of bound
-        Pair newco = movementStrategy.move(old,direction);
-        if(newco.getCol()>= gameBoard.getWidth() || newco.getRow()>= gameBoard.getHeight() || newco.getCol()<0 || newco.getRow()<0)
-            return -1;
-//        if(newco==old)
-            return -1;
 
+        // Initialize snake
+        this.snake = new LinkedList<>();
+        this.snakeMap = new HashMap<>();
+        Pair initialPos = new Pair(0, 0);
+        this.snake.offerFirst(initialPos);
+        this.snakeMap.put(initialPos, true);
+
+        // Set default movement strategy
+        this.movementStrategy = new HumanStrategy();
+    }
+
+    // Set the movement strategy (Human or AI)
+    public void setMovementStrategy(MovementStrategy strategy) {
+        this.movementStrategy = strategy;
+    }
+
+    // Returns the new score or -1 if game over.
+    public int move(String direction) {
+        // Get current head
+        Pair currentHead = this.snake.peekFirst();
+
+        // Get next position using strategy pattern
+        Pair newHead = this.movementStrategy.move(currentHead, direction);
+        int newHeadRow = newHead.getKey();
+        int newHeadColumn = newHead.getValue();
+        // Check boundary conditions
+        boolean crossesBoundary = newHeadRow < 0 || newHeadRow >= this.board.getHeight() ||
+                newHeadColumn < 0 || newHeadColumn >= this.board.getWidth();
+
+        // Get current tail for collision check
+        Pair currentTail = this.snake.peekLast();
+
+        // Check if snake bites itself (excluding tail which will move away)
+        boolean bitesItself = this.snakeMap.containsKey(newHead) &&
+                !(newHead.getKey() == currentTail.getKey() &&
+                        newHead.getValue() == currentTail.getValue());
+
+        // Game over conditions
+        if (crossesBoundary || bitesItself) {
+            return -1;
+        }
+        // Check if snake eats food
+        boolean ateFood = (this.foodIndex < this.food.length) &&
+                (this.food[this.foodIndex][0] == newHeadRow) &&
+                (this.food[this.foodIndex][1] == newHeadColumn);
+        if (ateFood) {
+            // Increment food index to move to next food
+            this.foodIndex++;
+        } else {
+            // If no food eaten, remove tail
+            this.snake.pollLast();
+            this.snakeMap.remove(currentTail);
+        }
+        // Add new head
+        this.snake.addFirst(newHead);
+        this.snakeMap.put(newHead, true);
+        // Calculate ans return score
+        int score = this.snake.size() - 1;
+        return score;
     }
 }
