@@ -1,9 +1,5 @@
 package FoodDeliveryServiceDesign;
 
-import FoodDeliveryServiceDesign.Customer;
-import FoodDeliveryServiceDesign.MenuItem;
-import FoodDeliveryServiceDesign.OrderStatus;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
