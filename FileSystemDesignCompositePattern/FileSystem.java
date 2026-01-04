@@ -1,4 +1,4 @@
-package FileSystemDesign;
+package FileSystemDesignCompositePattern;
 
 public interface FileSystem {
     void ls(String indent);
