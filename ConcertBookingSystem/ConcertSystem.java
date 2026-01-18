@@ -26,35 +26,38 @@ public class ConcertSystem {
     }
 
 
-    public void bookConcert(Concert toBook, List<Seat> seatsToBook)
+    public void bookConcert(Concert toBook, List<Seat> seatsToBook, User user)
     {
-        String artist=toBook.getArtist();
-        LocalDateTime startTime = toBook.getStartTime();
-        LocalDateTime endTime= toBook.getEndTime();
-        String venue=toBook.getVenue();
-Concert cur;
-        for(Concert c: concerts.values()){
-            if((c.getArtist().equals(artist)) && (c.getStartTime().isBefore(startTime)) && (c.getEndTime().isAfter(endTime)) &&
-                  venue.equals(c.getVenue())){
-                cur=c;
-                Payment payment=new Payment(paymentStrategy);
-                payment.pay();
-                break;
-            }
+        Concert concertToBook = concerts.get(toBook.getId());
+        if(concertToBook == null) {
+            System.out.println("Concert not found");
+            return;
         }
+
         synchronized (lock)
         {
             for(Seat s: seatsToBook)
             {
                 if(s.getStatus()!=SeatStatus.AVAILABLE){
-                    break;
+                    System.out.println("Seats not available");
+                    return;
                 }
             }
+
             for(Seat s: seatsToBook)
                 s.book();
 
+            if(paymentStrategy != null) {
+                Payment payment=new Payment(paymentStrategy);
+                payment.pay();
+            }
+
+            String bookingId = "BK" + System.currentTimeMillis();
+            Booking booking = new Booking(bookingId, user, concertToBook, seatsToBook);
+            bookings.put(bookingId, booking);
+
+            System.out.println("Booking successful! Booking ID: " + bookingId);
         }
-        System.out.println("No concert ");
     }
 
     public void addConcert(Concert concert){
