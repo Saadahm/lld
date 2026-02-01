@@ -1,5 +1,5 @@
 package MeetingScheduler;
 
 public interface NotificationService {
-    public void update();
+    public void update(User host);
 }
