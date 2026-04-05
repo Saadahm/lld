@@ -1,6 +1,5 @@
-package TextEditorCommand;
+package Spotify;
 
 public interface Command {
     void execute();
-    void undo();
 }
